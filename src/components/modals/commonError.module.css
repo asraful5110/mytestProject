@@ -1,0 +1,21 @@
+.box {
+  position: fixed;
+  max-width: 400px;
+  box-shadow: 0 0 5px black;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99;
+  background-color: var(--white);
+  padding: 30px 20px;
+  display: none;
+}
+
+.closeBtn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+}

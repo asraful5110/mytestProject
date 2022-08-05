@@ -3,16 +3,18 @@ import {
   Input,
   Button,
   Text,
-  Error
+  Error,
+  A,
 } from "../../styled_components/bassic_styled";
+import CommonError from "../modals/commonError";
 
 import style from "./signup.module.css";
 
-import { useReducer,useRef, useEffect} from "react";
-
+import { useReducer, useRef, useState } from "react";
+import usehandaleChange from '../../hooks/inputHandaleChange';
 const initialState = {
-  fname: "",
-  lname: "",
+  firstName: "",
+  lastName: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -20,10 +22,10 @@ const initialState = {
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case "fname":
-      return { ...state, fname: action.value };
-    case "lname":
-      return { ...state, lname: action.value };
+    case "firstName":
+      return { ...state, firstName: action.value };
+    case "lastName":
+      return { ...state, lastName: action.value };
     case "email":
       return { ...state, email: action.value };
     case "password":
@@ -39,19 +41,41 @@ export default function Signup() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const password = useRef();
   const confirmPassword = useRef();
-  const form = useRef();
+  const [error, setError] = useState({});
+  const commonError = useRef();
+  const [serverError,setServerError] = useState();
 
-
-  useEffect(()=>{
-    form.current.onsubmit = (e)=>{
-       if(state.password !== state.confirmPassword){
-          return false;
-       }
+  const submitForm = async (e) => {
+    e.preventDefault();
+    if (password.current.value !== confirmPassword.current.value) {
+      setError({ confirmPassword: { msg: "Password not match!" } });
+    } else {
+      const req = await fetch("http://localhost:4000/signup", {
+        method: "post",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(state),
+      });
+      const res = await req.json();
+      if (res.success) {
+       setTimeout(()=>{
+            // eslint-disable-next-line no-restricted-globals
+            location.href = '/login'
+       },1000)
+      } else if(res.serverError) {
+        setServerError(res.serverError)
+       commonError.current.style.display = 'block'
+      }else{
+        setError(res);
+      }
     }
-  },[state.password,state.confirmPassword])
+  };
+
   return (
     <div className={style.signupBox}>
-      <form action='http://localhost:4000/test' method="post" ref={form}>
+      <CommonError ref={commonError}>{serverError}</CommonError>
+      <form onSubmit={submitForm}>
         <Title style={{ textAlign: "center", marginBottom: "30px" }}>
           Signup
         </Title>
@@ -62,12 +86,12 @@ export default function Signup() {
           <Input
             type="text"
             id="firstName"
-            onChange={(e) => dispatch({ type: "fname", value: e.target.value })}
-            value={state.fname}
+            onChange={(e) =>usehandaleChange(e,dispatch)}
+            value={state.firstName}
             name="firstName"
             placeholder="Your first name"
           />
-          <Error></Error>
+          <Error>{error.fname ? error.fname.msg : ""}</Error>
         </div>
         <div className={style.formItem}>
           <label htmlFor="lastName">
@@ -77,10 +101,11 @@ export default function Signup() {
             type="text"
             id="lastName"
             name="lastName"
-            onChange={(e) => dispatch({ type: "lname", value: e.target.value })}
-            value={state.lname}
+            onChange={(e) =>usehandaleChange(e,dispatch)}
+            value={state.lastName}
             placeholder="Your last name"
-          /><Error></Error>
+          />
+          <Error>{error.lname ? error.lname.msg : ""}</Error>
         </div>
         <div className={style.formItem}>
           <label htmlFor="email">
@@ -90,11 +115,11 @@ export default function Signup() {
             type="email"
             id="email"
             name="email"
-            onChange={(e) => dispatch({ type: "email", value: e.target.value })}
+            onChange={(e) => usehandaleChange(e,dispatch)}
             value={state.email}
             placeholder="Your email"
           />
-          <Error></Error>
+          <Error>{error.email ? error.email.msg : ""}</Error>
         </div>
         <div className={style.formItem}>
           <label htmlFor="password">
@@ -104,14 +129,12 @@ export default function Signup() {
             type="password"
             id="password"
             name="password"
-            onChange={(e) =>
-              dispatch({ type: "password", value: e.target.value })
-            }
+            onChange={(e) =>usehandaleChange(e,dispatch)}
             ref={password}
             value={state.password}
             placeholder="Your password"
           />
-          <Error></Error>
+          <Error>{error.password ? error.password.msg : ""}</Error>
         </div>
         <div className={style.formItem}>
           <label htmlFor="confirmPassword">
@@ -122,19 +145,29 @@ export default function Signup() {
             id="confirmPassword"
             name="confirmPassword"
             ref={confirmPassword}
-            onChange={(e) =>
-              dispatch({ type: "confirmPassword", value: e.target.value })
-            }
+            onChange={(e) => usehandaleChange(e,dispatch) }
             value={state.confirmPassword}
             placeholder="Re-type password"
           />
-          <Error></Error>
+          <Error>
+            {error.confirmPassword ? error.confirmPassword.msg : ""}
+          </Error>
         </div>
-        <div className={style.formItem}>
-          <Button type="submit" style={{marginTop : '20px'}}>Submit</Button>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div className={style.formItem}>
+            <Button type="submit">Submit</Button>
+          </div>
+          <Text>
+            <A href="/login">I have alreay account</A>
+          </Text>
         </div>
       </form>
     </div>
-  )
-
-          }
+  );
+}

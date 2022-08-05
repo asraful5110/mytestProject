@@ -22,7 +22,7 @@ function App() {
       <div className="container">
         <Title color="var(--tomato)">This is a title</Title>
         <Text>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ipsum,
+          Asraful islam ipsum dolor sit amet, consectetur adipisicing elit. Ipsum,
           sapiente cumque nemo animi nam molestiae! Repellat laborum, doloremque
           placeat quasi eveniet dicta officiis autem repellendus, provident
           nihil vel consectetur numquam possimus. Temporibus fugit architecto
